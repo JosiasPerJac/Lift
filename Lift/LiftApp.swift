@@ -6,12 +6,49 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct LiftApp: App {
+    let container: ModelContainer
+    
+    init() {
+        do {
+            container = try ModelContainer(for: FlightEntity.self)
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            CompositionRootView()
         }
+        .modelContainer(container)
+    }
+}
+
+struct CompositionRootView: View {
+    @Environment(\.modelContext) private var modelContext
+    
+    var body: some View {
+        let aviationClient = AviationStackClient()
+        let unsplashClient = UnsplashClient()
+        
+        let flightRepo = DefaultFlightRepository(
+            aviationClient: aviationClient,
+            modelContext: modelContext
+        )
+        
+        let imageRepo = DefaultImageRepository(
+            unsplashClient: unsplashClient
+        )
+        
+        ContentView(
+            viewModel: FlightTrackerViewModel(
+                repository: flightRepo,
+                imageRepository: imageRepo
+            )
+        )
     }
 }
