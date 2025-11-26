@@ -24,6 +24,8 @@ final class FlightEntity {
     var arrivalIata: String
     var departureDate: Date?
     var arrivalDate: Date?
+    var departureTimeZoneId: String?
+    var arrivalTimeZoneId: String?
 
     init(
         flightIata: String,
@@ -37,7 +39,9 @@ final class FlightEntity {
         departureIata: String,
         arrivalIata: String,
         departureDate: Date?,
-        arrivalDate: Date?
+        arrivalDate: Date?,
+        departureTimeZoneId: String? = nil,
+        arrivalTimeZoneId: String? = nil
     ) {
         self.flightIata = flightIata
         self.lastUpdated = lastUpdated
@@ -51,5 +55,8 @@ final class FlightEntity {
         self.arrivalIata = arrivalIata
         self.departureDate = departureDate
         self.arrivalDate = arrivalDate
+        self.departureTimeZoneId = departureTimeZoneId
+        self.arrivalTimeZoneId = arrivalTimeZoneId
     }
 }
+

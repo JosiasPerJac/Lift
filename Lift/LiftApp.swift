@@ -30,20 +30,20 @@ struct LiftApp: App {
 
 struct CompositionRootView: View {
     @Environment(\.modelContext) private var modelContext
-    
+
     var body: some View {
-        let aviationClient = AviationStackClient()
+        let airLabsClient = AirLabsClient()
         let unsplashClient = UnsplashClient()
-        
+
         let flightRepo = DefaultFlightRepository(
-            aviationClient: aviationClient,
+            airLabsClient: airLabsClient,
             modelContext: modelContext
         )
-        
+
         let imageRepo = DefaultImageRepository(
             unsplashClient: unsplashClient
         )
-        
+
         ContentView(
             viewModel: FlightTrackerViewModel(
                 repository: flightRepo,
@@ -52,3 +52,4 @@ struct CompositionRootView: View {
         )
     }
 }
+

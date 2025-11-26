@@ -8,37 +8,54 @@
 import Foundation
 
 enum FlightMapper {
-    static func mapToEntity(dto: AviationStackFlight) -> FlightEntity? {
-        guard let flightIata = dto.flight.iata else { return nil }
-        
+
+    private static func normalizedStatus(from dto: AirLabsFlight) -> String {
+        let raw = dto.status?.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let now = Date().timeIntervalSince1970
+
+        if let depTs = dto.depTimeTs, depTs > now {
+            return "scheduled"
+        }
+        return (raw?.isEmpty == false) ? raw! : "unknown"
+    }
+
+    static func mapToEntity(dto: AirLabsFlight) -> FlightEntity? {
+        guard let flightIata = dto.flightIata else { return nil }
+
         return FlightEntity(
             flightIata: flightIata,
-            lastUpdated: dto.live?.updated ?? Date(),
-            status: dto.flightStatus ?? "unknown",
-            latitude: dto.live?.latitude ?? 0.0,
-            longitude: dto.live?.longitude ?? 0.0,
-            altitude: dto.live?.altitude ?? 0.0,
-            heading: dto.live?.direction ?? 0.0,
-            horizontalSpeed: dto.live?.speedHorizontal ?? 0.0,
-            departureIata: dto.departure.iata ?? "",
-            arrivalIata: dto.arrival.iata ?? "",
-            departureDate: dto.departure.scheduled,
-            arrivalDate: dto.arrival.scheduled
+            lastUpdated: dto.updated.map(Date.init(timeIntervalSince1970:)) ?? Date(),
+            status: normalizedStatus(from: dto),
+            latitude: dto.lat ?? 0,
+            longitude: dto.lng ?? 0,
+            altitude: dto.alt ?? 0,
+            heading: dto.dir ?? 0,
+            horizontalSpeed: dto.speed ?? 0,
+            departureIata: dto.depIata ?? "",
+            arrivalIata: dto.arrIata ?? "",
+            departureDate: dto.depTimeTs.map(Date.init(timeIntervalSince1970:)),
+            arrivalDate: dto.arrTimeTs.map(Date.init(timeIntervalSince1970:))
         )
     }
-    
-    static func updateEntity(_ entity: FlightEntity, with dto: AviationStackFlight) {
-        entity.lastUpdated = dto.live?.updated ?? Date()
-        entity.status = dto.flightStatus ?? entity.status
-        entity.latitude = dto.live?.latitude ?? entity.latitude
-        entity.longitude = dto.live?.longitude ?? entity.longitude
-        entity.altitude = dto.live?.altitude ?? entity.altitude
-        entity.heading = dto.live?.direction ?? entity.heading
-        entity.horizontalSpeed = dto.live?.speedHorizontal ?? entity.horizontalSpeed
+
+    static func updateEntity(_ entity: FlightEntity, with dto: AirLabsFlight) {
+        if let updated = dto.updated {
+            entity.lastUpdated = Date(timeIntervalSince1970: updated)
+        }
+        entity.status = normalizedStatus(from: dto)
+        entity.latitude = dto.lat ?? entity.latitude
+        entity.longitude = dto.lng ?? entity.longitude
+        entity.altitude = dto.alt ?? entity.altitude
+        entity.heading = dto.dir ?? entity.heading
+        entity.horizontalSpeed = dto.speed ?? entity.horizontalSpeed
+        if let dep = dto.depIata { entity.departureIata = dep }
+        if let arr = dto.arrIata { entity.arrivalIata = arr }
+        if let depTs = dto.depTimeTs { entity.departureDate = Date(timeIntervalSince1970: depTs) }
+        if let arrTs = dto.arrTimeTs { entity.arrivalDate = Date(timeIntervalSince1970: arrTs) }
     }
-    
+
     static func mapToDomain(entity: FlightEntity) -> Flight {
-        return Flight(
+        Flight(
             id: entity.flightIata,
             lastUpdated: entity.lastUpdated,
             status: entity.status,
@@ -50,7 +67,9 @@ enum FlightMapper {
             departureIata: entity.departureIata,
             arrivalIata: entity.arrivalIata,
             departureDate: entity.departureDate,
-            arrivalDate: entity.arrivalDate
+            arrivalDate: entity.arrivalDate,
+            departureTimeZoneId: entity.departureTimeZoneId,
+            arrivalTimeZoneId: entity.arrivalTimeZoneId
         )
     }
 }

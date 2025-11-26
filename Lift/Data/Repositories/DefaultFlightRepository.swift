@@ -9,21 +9,44 @@ import Foundation
 import SwiftData
 
 final class DefaultFlightRepository: FlightRepository {
-    private let aviationClient: AviationStackClient
+    private let airLabsClient: AirLabsClient
     private let modelContext: ModelContext
     private let cacheValidity: TimeInterval = 300
     
-    init(aviationClient: AviationStackClient, modelContext: ModelContext) {
-        self.aviationClient = aviationClient
+    init(airLabsClient: AirLabsClient, modelContext: ModelContext) {
+        self.airLabsClient = airLabsClient
         self.modelContext = modelContext
     }
     
     func getFlight(iata: String) async throws -> Flight? {
         if let cachedEntity = fetchLocalEntity(iata: iata), isCacheValid(cachedEntity) {
-            
             return FlightMapper.mapToDomain(entity: cachedEntity)
         }
         return try await fetchRemoteFlight(iata: iata)
+    }
+
+    func saveFlight(_ flight: Flight) throws {
+        if fetchLocalEntity(iata: flight.id) != nil {
+            return
+        }
+
+        let newEntity = FlightEntity(
+            flightIata: flight.id,
+            lastUpdated: Date(),
+            status: flight.status,
+            latitude: flight.latitude,
+            longitude: flight.longitude,
+            altitude: flight.altitude,
+            heading: flight.heading,
+            horizontalSpeed: flight.horizontalSpeed,
+            departureIata: flight.departureIata,
+            arrivalIata: flight.arrivalIata,
+            departureDate: flight.departureDate,
+            arrivalDate: flight.arrivalDate
+        )
+
+        modelContext.insert(newEntity)
+        try modelContext.save()
     }
     
     private func fetchLocalEntity(iata: String) -> FlightEntity? {
@@ -38,8 +61,9 @@ final class DefaultFlightRepository: FlightRepository {
     }
     
     private func fetchRemoteFlight(iata: String) async throws -> Flight? {
-        let flights = try await aviationClient.fetchFlights(iataCode: iata)
-        guard let flightDTO = flights.first else { return nil }
+        guard let flightDTO = try await airLabsClient.fetchFlight(iataCode: iata) else {
+            return nil
+        }
         
         let entityToReturn: FlightEntity
         

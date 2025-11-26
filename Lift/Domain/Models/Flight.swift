@@ -22,4 +22,7 @@ struct Flight: Sendable, Identifiable {
     let arrivalIata: String
     let departureDate: Date?
     let arrivalDate: Date?
+    
+    let departureTimeZoneId: String?
+    let arrivalTimeZoneId: String?
 }

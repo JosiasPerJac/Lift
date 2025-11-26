@@ -9,4 +9,5 @@ import Foundation
 
 protocol FlightRepository {
     func getFlight(iata: String) async throws -> Flight?
+    func saveFlight(_ flight: Flight) throws
 }

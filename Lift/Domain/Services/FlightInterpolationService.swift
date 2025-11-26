@@ -10,16 +10,12 @@ import CoreLocation
 
 struct FlightInterpolationService {
     
-    /// Calculates the estimated current position of the flight based on elapsed time and speed.
     func interpolatePosition(for flight: Flight) -> Flight {
         let timeElapsed = Date().timeIntervalSince(flight.lastUpdated)
         
-        // If data is very fresh (less than 5 seconds), return as is
         if timeElapsed < 5 { return flight }
         
-        // Convert speed from km/h (standard API unit) to m/s
         let speedInMetersPerSecond = flight.horizontalSpeed * 0.277778
-        
         let distanceTraveled = speedInMetersPerSecond * timeElapsed
         let currentLocation = CLLocationCoordinate2D(latitude: flight.latitude, longitude: flight.longitude)
         
@@ -41,7 +37,9 @@ struct FlightInterpolationService {
             departureIata: flight.departureIata,
             arrivalIata: flight.arrivalIata,
             departureDate: flight.departureDate,
-            arrivalDate: flight.arrivalDate
+            arrivalDate: flight.arrivalDate,
+            departureTimeZoneId: flight.departureTimeZoneId,
+            arrivalTimeZoneId: flight.arrivalTimeZoneId
         )
     }
     
@@ -52,8 +50,12 @@ struct FlightInterpolationService {
         let lat1 = coordinate.latitude * .pi / 180
         let lon1 = coordinate.longitude * .pi / 180
         
-        let lat2 = asin(sin(lat1) * cos(angularDistance) + cos(lat1) * sin(angularDistance) * cos(bearingRadians))
-        let lon2 = lon1 + atan2(sin(bearingRadians) * sin(angularDistance) * cos(lat1), cos(angularDistance) - sin(lat1) * sin(lat2))
+        let lat2 = asin(sin(lat1) * cos(angularDistance) +
+                        cos(lat1) * sin(angularDistance) * cos(bearingRadians))
+        let lon2 = lon1 + atan2(
+            sin(bearingRadians) * sin(angularDistance) * cos(lat1),
+            cos(angularDistance) - sin(lat1) * sin(lat2)
+        )
         
         return CLLocationCoordinate2D(
             latitude: lat2 * 180 / .pi,
@@ -61,3 +63,4 @@ struct FlightInterpolationService {
         )
     }
 }
+

@@ -8,9 +8,9 @@
 import Foundation
 
 enum APIConfiguration {
-    static let aviationStackBaseURL = URL(string: "https://api.aviationstack.com/v1")!
-
-    static var aviationStackAPIKey: String {
+    static let airLabsBaseURL = URL(string: "https://airlabs.co/api/v9")!
+    
+    static var airLabsAPIKey: String {
         guard let key = Bundle.main.object(forInfoDictionaryKey: "AVIATION_API_KEY") as? String else {
             fatalError("AVIATION_API_KEY not set in Info.plist")
         }
