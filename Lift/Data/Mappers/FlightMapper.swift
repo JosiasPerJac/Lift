@@ -34,7 +34,11 @@ enum FlightMapper {
             departureIata: dto.depIata ?? "",
             arrivalIata: dto.arrIata ?? "",
             departureDate: dto.depTimeTs.map(Date.init(timeIntervalSince1970:)),
-            arrivalDate: dto.arrTimeTs.map(Date.init(timeIntervalSince1970:))
+            arrivalDate: dto.arrTimeTs.map(Date.init(timeIntervalSince1970:)),
+            departureTerminal: dto.depTerminal,
+            departureGate: dto.depGate,
+            arrivalTerminal: dto.arrTerminal,
+            arrivalGate: dto.arrGate
         )
     }
 
@@ -48,10 +52,16 @@ enum FlightMapper {
         entity.altitude = dto.alt ?? entity.altitude
         entity.heading = dto.dir ?? entity.heading
         entity.horizontalSpeed = dto.speed ?? entity.horizontalSpeed
+        
         if let dep = dto.depIata { entity.departureIata = dep }
         if let arr = dto.arrIata { entity.arrivalIata = arr }
         if let depTs = dto.depTimeTs { entity.departureDate = Date(timeIntervalSince1970: depTs) }
         if let arrTs = dto.arrTimeTs { entity.arrivalDate = Date(timeIntervalSince1970: arrTs) }
+        
+        entity.departureTerminal = dto.depTerminal
+        entity.departureGate = dto.depGate
+        entity.arrivalTerminal = dto.arrTerminal
+        entity.arrivalGate = dto.arrGate
     }
 
     static func mapToDomain(entity: FlightEntity) -> Flight {
@@ -68,6 +78,10 @@ enum FlightMapper {
             arrivalIata: entity.arrivalIata,
             departureDate: entity.departureDate,
             arrivalDate: entity.arrivalDate,
+            departureTerminal: entity.departureTerminal,
+            departureGate: entity.departureGate,
+            arrivalTerminal: entity.arrivalTerminal,
+            arrivalGate: entity.arrivalGate,
             departureTimeZoneId: entity.departureTimeZoneId,
             arrivalTimeZoneId: entity.arrivalTimeZoneId
         )

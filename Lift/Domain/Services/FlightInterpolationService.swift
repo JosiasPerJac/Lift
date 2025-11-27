@@ -38,6 +38,10 @@ struct FlightInterpolationService {
             arrivalIata: flight.arrivalIata,
             departureDate: flight.departureDate,
             arrivalDate: flight.arrivalDate,
+            departureTerminal: flight.departureTerminal,
+            departureGate: flight.departureGate,
+            arrivalTerminal: flight.arrivalTerminal,
+            arrivalGate: flight.arrivalGate,
             departureTimeZoneId: flight.departureTimeZoneId,
             arrivalTimeZoneId: flight.arrivalTimeZoneId
         )
@@ -63,4 +67,3 @@ struct FlightInterpolationService {
         )
     }
 }
-

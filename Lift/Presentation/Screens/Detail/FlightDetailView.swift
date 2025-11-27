@@ -21,8 +21,6 @@ struct FlightDetailView: View {
     @State private var position: MapCameraPosition
     @State private var pulseAnimation = false
     
-    // MARK: - Init
-    
     init(
         flight: Flight,
         images: FlightImages? = nil,
@@ -44,14 +42,12 @@ struct FlightDetailView: View {
         }
     }
     
-    // MARK: - Computed
-    
     private var statusColor: Color {
         let status = flight.status.lowercased()
         if status.contains("active") || status.contains("en-route") { return .green }
         if status.contains("landed") { return .gray }
         if status.contains("delayed") { return .red }
-        return .orange
+        return .green
     }
     
     private var hasValidCoordinates: Bool {
@@ -67,41 +63,38 @@ struct FlightDetailView: View {
         flight.status.lowercased().contains("scheduled")
     }
 
-    
-    // MARK: - Body
-    
     var body: some View {
         GeometryReader { geometry in
-                let desiredSheetHeight: CGFloat = 430
-                let mapHeight = max(geometry.size.height * 0.42, geometry.size.height - desiredSheetHeight)
+            let desiredSheetHeight: CGFloat = 430
+            let mapHeight = max(geometry.size.height * 0.42, geometry.size.height - desiredSheetHeight)
 
-                ZStack {
-                    Color.black.ignoresSafeArea()
+            ZStack {
+                Color.black.ignoresSafeArea()
 
-                    VStack(spacing: 0) {
-                        ZStack {
-                            mapLayer
-                                .ignoresSafeArea(edges: .top)
+                VStack(spacing: 0) {
+                    ZStack {
+                        mapLayer
+                            .ignoresSafeArea(edges: .top)
 
-                            VStack {
-                                HStack { headerCard }
-                                    .padding(.top,
-                                             (geometry.safeAreaInsets.top > 0
-                                              ? geometry.safeAreaInsets.top + 16
-                                              : 68))
-                                    .padding(.horizontal, 18)
-                                Spacer()
-                            }
+                        VStack {
+                            HStack { headerCard }
+                                .padding(.top,
+                                         (geometry.safeAreaInsets.top > 0
+                                          ? geometry.safeAreaInsets.top + 16
+                                          : 68))
+                                .padding(.horizontal, 18)
+                            Spacer()
                         }
-                        .frame(height: mapHeight)
-
-                        sheet
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
                     }
+                    .frame(height: mapHeight)
+
+                    sheet
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
                 }
             }
-            .ignoresSafeArea()
-            .navigationBarHidden(true)
+        }
+        .ignoresSafeArea()
+        .navigationBarHidden(true)
         .onReceive(viewModel.$currentFlight.compactMap { $0 }) { updated in
             guard updated.id == flight.id else { return }
             flight = updated
@@ -112,8 +105,6 @@ struct FlightDetailView: View {
             images = newImages
         }
     }
-    
-    // MARK: - Map
     
     private var mapLayer: some View {
         ZStack {
@@ -150,9 +141,8 @@ struct FlightDetailView: View {
                     }
                 }
                 .mapStyle(.hybrid(elevation: .realistic))
-                .mapControls {
-                    MapCompass().hidden()
-                }
+                .mapControlVisibility(.hidden)
+                .environment(\.colorScheme, .dark)
                 
             } else {
                 ZStack {
@@ -173,8 +163,6 @@ struct FlightDetailView: View {
             }
         }
     }
-    
-    // MARK: - Header
     
     private var headerCard: some View {
         HStack(spacing: 14) {
@@ -233,70 +221,66 @@ struct FlightDetailView: View {
         .shadow(color: .black.opacity(0.35), radius: 10, y: 4)
     }
     
-    // MARK: - Sheet
-    
     private var sheet: some View {
         ZStack {
-            Color.black
+            Color(red: 0.05, green: 0.05, blue: 0.05)
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 16) {
                     heroCard
                     
-                    Grid(horizontalSpacing: 16, verticalSpacing: 16) {
-                        GridRow {
-                            InfoBox(
-                                title: "Status",
-                                value: flight.status.capitalized,
-                                color: statusColor
-                            )
-                            
-                            InfoBox(
-                                title: "Aircraft",
-                                value: flight.id,
-                                color: .white
-                            )
-                        }
-                        GridRow {
-                            InfoBox(
-                                title: "Departs",
-                                value: formatTime(
-                                    flight.departureDate,
-                                    timeZoneId: flight.departureTimeZoneId
-                                ),
-                                color: .white
-                            )
-                            InfoBox(
-                                title: "Arrives",
-                                value: formatTime(
-                                    flight.arrivalDate,
-                                    timeZoneId: flight.arrivalTimeZoneId
-                                ),
-                                color: .white
-                            )
-                        }
-                        GridRow {
-                            InfoBox(
-                                title: "Altitude",
-                                value: "\(Int(flight.altitude)) m",
-                                color: .white
-                            )
-                            InfoBox(
-                                title: "Speed",
-                                value: "\(Int(flight.horizontalSpeed)) km/h",
-                                color: .white
-                            )
-                        }
+                    VStack(spacing: 1) {
+                        LegInfoRow(
+                            airportCode: flight.departureIata,
+                            time: formatTime(flight.departureDate, timeZoneId: flight.departureTimeZoneId),
+                            timeLabel: "Scheduled",
+                            terminal: flight.departureTerminal ?? "-",
+                            gate: flight.departureGate ?? "-",
+                            isDeparture: true,
+                            statusColor: statusColor
+                        )
+                        
+                        Divider().background(Color.white.opacity(0.1))
+                        
+                        LegInfoRow(
+                            airportCode: flight.arrivalIata,
+                            time: formatTime(flight.arrivalDate, timeZoneId: flight.arrivalTimeZoneId),
+                            timeLabel: "Scheduled",
+                            terminal: flight.arrivalTerminal ?? "-",
+                            gate: flight.arrivalGate ?? "-",
+                            isDeparture: false,
+                            statusColor: statusColor
+                        )
                     }
-                    .padding(.horizontal, 16)
+                    .background(Color(red: 0.11, green: 0.11, blue: 0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    
+                    HStack(spacing: 16) {
+                        DarkStatBox(
+                            icon: "airplane",
+                            title: "Aircraft",
+                            value: "B787-9"
+                        )
+                        
+                        DarkStatBox(
+                            icon: "speedometer",
+                            title: "Speed",
+                            value: "\(Int(flight.horizontalSpeed)) km/h"
+                        )
+                        
+                        DarkStatBox(
+                            icon: "arrow.up.to.line",
+                            title: "Altitude",
+                            value: "\(Int(flight.altitude)) m"
+                        )
+                    }
                 }
-                .padding(.top, 12)
-                .padding(.bottom, 2)
+                .padding(.top, 20)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 40)
             }
         }
     }
-    
-    // MARK: - Hero
     
     private var heroCard: some View {
         ZStack {
@@ -327,17 +311,11 @@ struct FlightDetailView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(flight.departureIata)
-                        .font(.system(size: 40,
-                                      weight: .black,
-                                      design: .rounded))
+                        .font(.system(size: 40, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
-                    Text(
-                        flight.departureDate?
-                            .formatted(date: .abbreviated, time: .omitted)
-                        ?? "Origin"
-                    )
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    Text(flight.departureDate?.formatted(date: .abbreviated, time: .omitted) ?? "Origin")
+                        .font(.subheadline)
+                        .foregroundStyle(.gray)
                 }
                 Spacer()
                 Image(systemName: "airplane")
@@ -346,27 +324,18 @@ struct FlightDetailView: View {
                 Spacer()
                 VStack(alignment: .trailing) {
                     Text(flight.arrivalIata)
-                        .font(.system(size: 40,
-                                      weight: .black,
-                                      design: .rounded))
+                        .font(.system(size: 40, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
-                    Text(
-                        flight.arrivalDate?
-                            .formatted(date: .abbreviated, time: .omitted)
-                        ?? "Destination"
-                    )
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    Text(flight.arrivalDate?.formatted(date: .abbreviated, time: .omitted) ?? "Destination")
+                        .font(.subheadline)
+                        .foregroundStyle(.gray)
                 }
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
         }
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .padding(.horizontal, 16)
     }
-    
-    // MARK: - Helpers
     
     private func updateCamera(with flight: Flight) {
         guard flight.latitude != 0 && flight.longitude != 0 else { return }
@@ -388,35 +357,102 @@ struct FlightDetailView: View {
     }
 }
 
-// MARK: - InfoBox
+// MARK: - Components
 
-struct InfoBox: View {
-    let title: String
-    let value: String
-    let color: Color
+struct LegInfoRow: View {
+    let airportCode: String
+    let time: String
+    let timeLabel: String
+    let terminal: String
+    let gate: String
+    let isDeparture: Bool
+    let statusColor: Color
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption2)
-                .fontWeight(.bold)
-                .foregroundStyle(.gray.opacity(0.8))
-                .textCase(.uppercase)
-                .tracking(1)
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Image(systemName: isDeparture ? "airplane.departure" : "airplane.arrival")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                    Text(airportCode)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                }
+                
+                Text(time)
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundStyle(isDeparture ? statusColor : .white)
+                
+                Text(timeLabel)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.gray)
+            }
             
-            Text(value)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(color)
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 8) {
+                HStack(spacing: 4) {
+                    Image(systemName: isDeparture ? "arrow.up.right.square.fill" : "door.left.hand.open")
+                        .font(.caption2)
+                        .foregroundStyle(.black)
+                    Text(terminal == "-" ? "T-" : "T\(terminal)")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color(red: 1.0, green: 0.8, blue: 0.0))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                
+                HStack(spacing: 4) {
+                    Image(systemName: "door.left.hand.open")
+                        .font(.caption2)
+                        .foregroundStyle(.black)
+                    Text(gate == "-" ? "G-" : gate)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color(red: 1.0, green: 0.8, blue: 0.0)) 
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(.white.opacity(0.08), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+    }
+}
+
+struct DarkStatBox: View {
+    let icon: String
+    let title: String
+    let value: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundStyle(.gray)
+                Spacer()
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.white)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
+                
+                Text(title)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.gray)
+                    .textCase(.uppercase)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity)
+        .background(Color(red: 0.11, green: 0.11, blue: 0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }

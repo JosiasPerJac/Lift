@@ -24,6 +24,12 @@ final class FlightEntity {
     var arrivalIata: String
     var departureDate: Date?
     var arrivalDate: Date?
+    
+    var departureTerminal: String?
+    var departureGate: String?
+    var arrivalTerminal: String?
+    var arrivalGate: String?
+    
     var departureTimeZoneId: String?
     var arrivalTimeZoneId: String?
 
@@ -40,6 +46,10 @@ final class FlightEntity {
         arrivalIata: String,
         departureDate: Date?,
         arrivalDate: Date?,
+        departureTerminal: String? = nil,
+        departureGate: String? = nil,
+        arrivalTerminal: String? = nil,
+        arrivalGate: String? = nil,
         departureTimeZoneId: String? = nil,
         arrivalTimeZoneId: String? = nil
     ) {
@@ -55,8 +65,11 @@ final class FlightEntity {
         self.arrivalIata = arrivalIata
         self.departureDate = departureDate
         self.arrivalDate = arrivalDate
+        self.departureTerminal = departureTerminal
+        self.departureGate = departureGate
+        self.arrivalTerminal = arrivalTerminal
+        self.arrivalGate = arrivalGate
         self.departureTimeZoneId = departureTimeZoneId
         self.arrivalTimeZoneId = arrivalTimeZoneId
     }
 }
-
