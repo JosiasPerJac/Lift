@@ -17,7 +17,7 @@ The app is fully offline-capable using SwiftData, allowing users to save flights
 
 # 📱 App Demo
 
-https://github.com/user-attachments/assets/d1fb6f72-55de-48b3-8dc1-491df2e81dc6
+https://github.com/user-attachments/assets/4e19f6c6-4bed-4a02-ab16-2192b7a80567
 
 # 📸 Screenshots
 
