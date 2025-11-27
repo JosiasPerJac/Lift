@@ -7,11 +7,24 @@
 
 import SwiftUI
 
+/// A reusable card component that displays detailed summary information about a flight.
+///
+/// This view visualizes the flight status, route (Departure -> Arrival), and a progress indicator.
 struct FlightCard: View {
-    let flight: Flight
-    var onAdd: (() -> Void)? = nil
-    var isSaved: Bool = false
+    
+    /// The domain model containing flight data.
+        let flight: Flight
+        
+        /// Optional closure triggered when the "Track" button is pressed.
+        var onAdd: (() -> Void)? = nil
+        
+        /// Determines whether the flight is already tracked, affecting the button's appearance.
+        var isSaved: Bool = false
 
+        /// Calculates the flight completion percentage (0.0 to 1.0).
+        ///
+        /// This logic derives the progress based on the current time relative to the departure
+        /// and arrival times. Returns 1.0 if the flight has landed.
     private var progress: Double {
         let status = flight.status.lowercased()
         if status.contains("landed") || status.contains("arrived") {
@@ -29,7 +42,10 @@ struct FlightCard: View {
 
         return min(max(elapsed / totalDuration, 0.0), 1.0)
     }
-
+    
+    /// Determines the semantic color based on the flight status.
+    ///
+    /// - Returns: Green for active, Gray for landed, Red for delayed, Orange for others.
     private var statusColor: Color {
         let status = flight.status.lowercased()
         if status.contains("en-route") { return .green }

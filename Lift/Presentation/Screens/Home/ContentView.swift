@@ -8,19 +8,38 @@
 import SwiftUI
 import SwiftData
 
+/// The root view of the application serving as the main dashboard.
+///
+/// This view acts as the container for the app's primary navigation logic, switching between
+/// the "My Flights" history list and the "Search" interface. It also manages the high-level
+/// dependency injection for the `FlightTrackerViewModel` and SwiftData context.
 struct ContentView: View {
+    
+    /// The shared view model responsible for flight logic and API state.
     @StateObject var viewModel: FlightTrackerViewModel
+    
+    /// The SwiftData context for performing deletion operations.
     @Environment(\.modelContext) private var modelContext
+    
+    /// A live query of saved flights, sorted by the most recently updated.
     @Query(sort: \FlightEntity.lastUpdated, order: .reverse) private var savedFlights: [FlightEntity]
     
+    /// Controls the current active tab (History vs Search).
     @State private var selectedTab: FlightTab = .myFlights
+    
+    /// The current query string for the flight search input.
     @State private var iataCode = ""
+    
+    /// Manages the focus state of the search text field.
     @FocusState private var isFocused: Bool
+    
+    /// Controls the presentation of the "Passport" statistics sheet.
     @State private var showPassport = false
     
     var body: some View {
         NavigationStack {
             ZStack {
+                // Background Gradient
                 LinearGradient(
                     colors: [
                         Color(red: 0.13, green: 0.15, blue: 0.19),
@@ -56,6 +75,7 @@ struct ContentView: View {
     
     // MARK: - Header
     
+    /// The top navigation bar containing the app title and the Passport button.
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
@@ -90,6 +110,7 @@ struct ContentView: View {
     
     // MARK: - Tabs
     
+    /// A custom segmented control to switch between views.
     private var tabSwitcher: some View {
         HStack(spacing: 4) {
             ForEach(FlightTab.allCases, id: \.self) { tab in
@@ -125,6 +146,7 @@ struct ContentView: View {
     
     // MARK: - My Flights
     
+    /// The view displaying the list of persisted flights.
     private var myFlightsView: some View {
         ScrollView {
             if savedFlights.isEmpty {
@@ -163,6 +185,7 @@ struct ContentView: View {
     
     // MARK: - Search
     
+    /// The view for searching and tracking new flights via the API.
     private var searchView: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -208,6 +231,7 @@ struct ContentView: View {
                     ErrorBanner(message: error)
                         .padding(.top, 32)
                 } else {
+                    // Default State
                     VStack(spacing: 12) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 40))
@@ -277,6 +301,7 @@ struct ContentView: View {
     
     // MARK: - Empty + delete
     
+    /// A visual state shown when no flights have been saved yet.
     private var emptyState: some View {
         VStack(spacing: 18) {
             ZStack {
@@ -348,6 +373,7 @@ struct ContentView: View {
     }
 }
 
+/// Defines the main navigation modes of the application.
 enum FlightTab: CaseIterable {
     case myFlights
     case search

@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Represents the paginated response structure from the Unsplash Search API.
 struct UnsplashSearchResponse: Decodable {
     let total: Int
     let totalPages: Int
@@ -19,6 +20,7 @@ struct UnsplashSearchResponse: Decodable {
     }
 }
 
+/// Represents a single photo object returned by Unsplash.
 struct UnsplashPhoto: Decodable {
     let id: String
     let description: String?
@@ -35,6 +37,7 @@ struct UnsplashPhoto: Decodable {
     }
 }
 
+/// Contains URLs for different image sizes available from Unsplash.
 struct UnsplashPhotoURLs: Decodable {
     let raw: String
     let full: String

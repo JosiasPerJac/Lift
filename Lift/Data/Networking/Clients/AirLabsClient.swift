@@ -7,15 +7,26 @@
 
 import Foundation
 
-import Foundation
-
+/// A networking client responsible for communicating with the AirLabs API.
+///
+/// This struct handles URL construction, query parameter encoding, and parsing
+/// the specific JSON envelope format used by AirLabs.
 struct AirLabsClient {
+    
+    /// The API key used for authentication.
     let apiKey: String
 
+    /// Initializes the client.
+    /// - Parameter apiKey: Defaults to the key found in `APIConfiguration`.
     init(apiKey: String = APIConfiguration.airLabsAPIKey) {
         self.apiKey = apiKey
     }
 
+    /// Fetches live flight data for a specific IATA code.
+    ///
+    /// - Parameter iataCode: The flight identifier (e.g., "AA100"). Spaces are automatically removed.
+    /// - Returns: An `AirLabsFlight` DTO if found, or `nil`.
+    /// - Throws: `AirLabsError` if the network fails, the response is invalid, or the API returns a logic error.
     func fetchFlight(iataCode: String) async throws -> AirLabsFlight? {
         let cleaned = iataCode.uppercased().replacingOccurrences(of: " ", with: "")
 
@@ -42,6 +53,7 @@ struct AirLabsClient {
 
         let decoder = JSONDecoder()
 
+        // Decodes the specific "Envelope" structure AirLabs uses (wrapping response and error fields).
         let envelope = try decoder.decode(AirLabsEnvelope<AirLabsFlight>.self, from: data)
 
         if let apiError = envelope.error {
@@ -52,6 +64,7 @@ struct AirLabsClient {
     }
 }
 
+/// Errors specific to the AirLabs networking layer.
 enum AirLabsError: LocalizedError {
     case invalidURL
     case invalidResponse

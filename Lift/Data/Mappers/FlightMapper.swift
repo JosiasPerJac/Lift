@@ -7,8 +7,18 @@
 
 import Foundation
 
+/// A utility namespace for transforming data between layers.
+///
+/// This mapper ensures separation of concerns by:
+/// 1. Converting raw API DTOs (`AirLabsFlight`) into persistent `FlightEntity` objects.
+/// 2. Converting `FlightEntity` objects into pure Domain `Flight` models for the UI.
+/// 3. Normalizing data (e.g., cleaning up status strings).
 enum FlightMapper {
 
+    /// Normalizes the flight status string based on the current time and departure timestamp.
+    ///
+    /// The API might return an empty status or outdated info. This logic infers "scheduled"
+    /// if the departure time is in the future.
     private static func normalizedStatus(from dto: AirLabsFlight) -> String {
         let raw = dto.status?.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         let now = Date().timeIntervalSince1970
@@ -19,6 +29,10 @@ enum FlightMapper {
         return (raw?.isEmpty == false) ? raw! : "unknown"
     }
 
+    /// Converts an API DTO into a new SwiftData entity.
+    ///
+    /// - Parameter dto: The raw data from AirLabs.
+    /// - Returns: A new `FlightEntity` or `nil` if the critical `flightIata` is missing.
     static func mapToEntity(dto: AirLabsFlight) -> FlightEntity? {
         guard let flightIata = dto.flightIata else { return nil }
 
@@ -42,6 +56,9 @@ enum FlightMapper {
         )
     }
 
+    /// Updates an existing SwiftData entity with fresh data from the API.
+    ///
+    /// This prevents creating duplicate records for the same flight.
     static func updateEntity(_ entity: FlightEntity, with dto: AirLabsFlight) {
         if let updated = dto.updated {
             entity.lastUpdated = Date(timeIntervalSince1970: updated)
@@ -64,6 +81,7 @@ enum FlightMapper {
         entity.arrivalGate = dto.arrGate
     }
 
+    /// Converts a persistent entity into a clean domain model.
     static func mapToDomain(entity: FlightEntity) -> Flight {
         Flight(
             id: entity.flightIata,

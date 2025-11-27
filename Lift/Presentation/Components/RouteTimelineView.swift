@@ -7,10 +7,19 @@
 
 import SwiftUI
 
+/// A custom visual component representing the flight's progress.
+///
+/// Displays a linear progress bar with an animated airplane icon that moves
+/// along the track based on the flight's completion percentage (from 0.0 to 1.0).
 struct RouteTimelineView: View {
+    
+    /// The normalized progress value (0.0 = Departure, 1.0 = Arrival).
     let progress: Double
+    
+    /// The color theme for the progress bar (e.g., green for active, gray for landed).
     let statusColor: Color
 
+    /// Internal state to animate the progress smoothly when the value changes.
     @State private var animatedProgress: CGFloat = 0
 
     var body: some View {
@@ -19,6 +28,7 @@ struct RouteTimelineView: View {
             let clamped = CGFloat(min(max(progress, 0.0), 1.0))
 
             ZStack(alignment: .leading) {
+                // Background Track (Dotted line aesthetic)
                 HStack(spacing: 0) {
                     Circle()
                         .fill(Color.white.opacity(0.5))
@@ -34,6 +44,7 @@ struct RouteTimelineView: View {
                 }
                 .padding(.horizontal, 4)
 
+                // Foreground Fill
                 HStack(spacing: 0) {
                     Rectangle()
                         .fill(
@@ -49,6 +60,7 @@ struct RouteTimelineView: View {
                     Spacer()
                 }
 
+                // Airplane Icon
                 ZStack {
                     Circle()
                         .fill(

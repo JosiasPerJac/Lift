@@ -9,9 +9,19 @@ import SwiftUI
 import MapKit
 import SwiftData
 
+/// A visual summary of the user's flight history, styled like a digital passport.
+///
+/// This view aggregates data from all saved flights in SwiftData to display statistics
+/// such as total distance flown, total flight time, and the number of unique airlines.
+/// It features an animated holographic effect.
 struct PassportView: View {
+    
+    /// Retrieves all saved flights to calculate statistics.
     @Query(sort: \FlightEntity.departureDate, order: .forward) private var savedFlights: [FlightEntity]
+    
     @Environment(\.dismiss) var dismiss
+    
+    /// Controls the "holographic" border animation loop.
     @State private var isAnimating = false
 
     var body: some View {
@@ -19,7 +29,7 @@ struct PassportView: View {
             ZStack {
                 Color.black.ignoresSafeArea()
                 
-                
+                // Background Gradients
                 ZStack {
                     RadialGradient(
                         colors: [Color(red: 0.4, green: 0.1, blue: 0.8).opacity(0.4), .clear],
@@ -76,6 +86,7 @@ struct PassportView: View {
         }
     }
 
+    /// Renders a map showing markers for every flight in the history.
     private func mapHeader(height: CGFloat) -> some View {
         Map {
             ForEach(savedFlights) { flight in
@@ -113,8 +124,10 @@ struct PassportView: View {
         }
     }
 
+    /// The card containing the aggregated statistics.
     private var passportCard: some View {
         VStack(alignment: .leading, spacing: 24) {
+            // Header Info
             HStack {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("2025 LIFT PASSPORT")
@@ -159,6 +172,7 @@ struct PassportView: View {
                     )
                 )
 
+            // Statistics Grid
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 30) {
                 statItem(label: "FLIGHTS", value: "\(savedFlights.count)")
                 statItem(label: "DISTANCE", value: calculateTotalDistance())
@@ -166,6 +180,7 @@ struct PassportView: View {
                 statItem(label: "AIRLINES", value: "\(calculateUniqueAirlines())")
             }
             
+            // Footer
             VStack(spacing: 4) {
                 Rectangle()
                     .fill(
@@ -238,6 +253,7 @@ struct PassportView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// Calculates total time by summing the duration between departure and arrival for all flights.
     private func calculateTotalTime() -> String {
         var totalInterval: TimeInterval = 0
         
@@ -252,6 +268,7 @@ struct PassportView: View {
         return "\(hours)h \(minutes)m"
     }
 
+    /// Estimates total distance flown based on flight duration (assuming average speed).
     private func calculateTotalDistance() -> String {
         var totalHours: Double = 0
         
@@ -261,10 +278,12 @@ struct PassportView: View {
             }
         }
         
+        // Approximation: 500 mph average speed
         let distance = Int(totalHours * 500)
         return "\(distance.formatted())mi"
     }
     
+    /// Counts the number of unique airline IATA codes (first 2 characters).
     private func calculateUniqueAirlines() -> Int {
         let codes = savedFlights.map { String($0.flightIata.prefix(2)) }
         return Set(codes).count

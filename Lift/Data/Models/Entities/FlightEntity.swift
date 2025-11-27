@@ -8,9 +8,17 @@
 import Foundation
 import SwiftData
 
+/// The persistence model representing a flight stored in the local database.
+///
+/// This class is managed by **SwiftData** and mirrors the structure of the Domain `Flight` model.
+/// It enables offline access and history tracking.
 @Model
 final class FlightEntity {
+    
+    /// The unique IATA code acts as the primary key constraint.
     @Attribute(.unique) var flightIata: String
+    
+    /// Timestamp of the last successful data update.
     var lastUpdated: Date
     var status: String
     

@@ -9,6 +9,10 @@ import SwiftUI
 import Combine
 import MapKit
 
+/// The detailed view displaying comprehensive information about a specific flight.
+///
+/// This view features a dynamic 3D map that tracks the flight's live position (interpolated),
+/// along with departure/arrival times, terminal info, and aircraft telemetry.
 struct FlightDetailView: View {
     @ObservedObject var viewModel: FlightTrackerViewModel
 
@@ -18,9 +22,13 @@ struct FlightDetailView: View {
     let onDelete: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
     
+    /// Controls the camera perspective of the Map view.
     @State private var position: MapCameraPosition
+    
+    /// Animation state for the "pulsing" radar effect around the plane.
     @State private var pulseAnimation = false
     
+    /// Initializes the view and sets the initial map camera based on the flight's location.
     init(
         flight: Flight,
         images: FlightImages? = nil,
@@ -36,12 +44,14 @@ struct FlightDetailView: View {
             _position = State(initialValue: .automatic)
         } else {
             let center = CLLocationCoordinate2D(latitude: flight.latitude, longitude: flight.longitude)
+            // Sets a camera 100km above the plane, matching its heading
             _position = State(initialValue: .camera(
                 MapCamera(centerCoordinate: center, distance: 100_000, heading: flight.heading)
             ))
         }
     }
     
+    /// Determines the semantic color based on flight status (Active/Landed/Delayed).
     private var statusColor: Color {
         let status = flight.status.lowercased()
         if status.contains("active") || status.contains("en-route") { return .green }
@@ -95,6 +105,7 @@ struct FlightDetailView: View {
         }
         .ignoresSafeArea()
         .navigationBarHidden(true)
+        // Listen for live updates from the ViewModel (Interpolation Service)
         .onReceive(viewModel.$currentFlight.compactMap { $0 }) { updated in
             guard updated.id == flight.id else { return }
             flight = updated
@@ -106,6 +117,7 @@ struct FlightDetailView: View {
         }
     }
     
+    /// The map view showing the live aircraft position or a placeholder state.
     private var mapLayer: some View {
         ZStack {
             if hasValidCoordinates {
@@ -118,6 +130,7 @@ struct FlightDetailView: View {
                         )
                     ) {
                         ZStack {
+                            // Pulsing Radar Effect
                             Circle()
                                 .stroke(statusColor.opacity(0.5), lineWidth: 1)
                                 .frame(
@@ -145,6 +158,7 @@ struct FlightDetailView: View {
                 .environment(\.colorScheme, .dark)
                 
             } else {
+                // Placeholder for flights without coordinates (e.g., Scheduled)
                 ZStack {
                     Color(red: 14/255, green: 16/255, blue: 28/255)
 
@@ -337,6 +351,7 @@ struct FlightDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
     
+    /// Updates the MapCamera position when new flight data arrives (interpolation).
     private func updateCamera(with flight: Flight) {
         guard flight.latitude != 0 && flight.longitude != 0 else { return }
         let center = CLLocationCoordinate2D(latitude: flight.latitude, longitude: flight.longitude)
@@ -359,6 +374,7 @@ struct FlightDetailView: View {
 
 // MARK: - Components
 
+/// A reusable row component displaying departure/arrival details (Terminal, Gate, Time).
 struct LegInfoRow: View {
     let airportCode: String
     let time: String
@@ -415,7 +431,7 @@ struct LegInfoRow: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color(red: 1.0, green: 0.8, blue: 0.0)) 
+                .background(Color(red: 1.0, green: 0.8, blue: 0.0))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
         }
@@ -423,6 +439,7 @@ struct LegInfoRow: View {
     }
 }
 
+/// A dark-themed card displaying a single statistic (Speed, Altitude, Aircraft).
 struct DarkStatBox: View {
     let icon: String
     let title: String

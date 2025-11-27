@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// A networking client responsible for fetching images from the Unsplash API.
 struct UnsplashClient {
     let accessKey: String
 
@@ -14,6 +15,13 @@ struct UnsplashClient {
         self.accessKey = accessKey
     }
 
+    /// Performs a search for photos matching a specific query.
+    ///
+    /// - Parameters:
+    ///   - query: The search term (e.g., "JFK Airport").
+    ///   - page: The page number to retrieve.
+    ///   - perPage: Number of results per page.
+    /// - Returns: An array of `UnsplashPhoto` objects.
     func searchPhotos(query: String, page: Int = 1, perPage: Int = 1) async throws -> [UnsplashPhoto] {
         var components = URLComponents(
             url: APIConfiguration.unsplashBaseURL.appendingPathComponent("search/photos"),
@@ -31,6 +39,7 @@ struct UnsplashClient {
         }
 
         var request = URLRequest(url: url)
+        // Authorization is passed via the Client-ID header as per Unsplash documentation.
         request.setValue("Client-ID \(accessKey)", forHTTPHeaderField: "Authorization")
 
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -43,6 +52,7 @@ struct UnsplashClient {
         return decoded.results
     }
 
+    /// Convenience method to fetch a single image for a query.
     func fetchSingleImage(query: String) async throws -> UnsplashPhoto? {
         let results = try await searchPhotos(query: query, page: 1, perPage: 1)
         return results.first

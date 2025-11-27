@@ -8,12 +8,14 @@
 import Foundation
 
 
+/// Represents the raw JSON structure of a flight returned by the AirLabs API.
 struct AirLabsFlight: Decodable {
     let hex: String?
     let regNumber: String?
     let aircraftIcao: String?
     let flag: String?
     
+    // Telemetry
     let lat: Double?
     let lng: Double?
     let alt: Double?
@@ -22,13 +24,16 @@ struct AirLabsFlight: Decodable {
     let vSpeed: Double?
     let squawk: String?
     
+    // Airline Info
     let airlineIata: String?
     let airlineIcao: String?
     
+    // Flight Identifiers
     let flightNumber: String?
     let flightIata: String?
     let flightIcao: String?
     
+    // Departure Info
     let depIata: String?
     let depIcao: String?
     let depTerminal: String?
@@ -37,6 +42,7 @@ struct AirLabsFlight: Decodable {
     let depTimeTs: TimeInterval?
     let depTimeUtc: String?
     
+    // Arrival Info
     let arrIata: String?
     let arrIcao: String?
     let arrTerminal: String?
@@ -46,6 +52,7 @@ struct AirLabsFlight: Decodable {
     let arrTimeTs: TimeInterval?
     let arrTimeUtc: String?
     
+    // Schedule & Status
     let duration: Int?
     let delayed: Int?
     let depDelayed: Int?
@@ -97,6 +104,7 @@ struct AirLabsFlight: Decodable {
     }
 }
 
+/// A generic wrapper to handle the AirLabs API response envelope.
 struct AirLabsEnvelope<T: Decodable>: Decodable {
     let request: AirLabsRequest?
     let response: T?

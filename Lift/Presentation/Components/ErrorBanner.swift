@@ -7,8 +7,9 @@
 
 import SwiftUI
 
-import SwiftUI
-
+/// A styled alert view for displaying error messages to the user.
+///
+/// Designed to be overlaid on top of other views to provide non-intrusive feedback.
 struct ErrorBanner: View {
     let message: String
     
